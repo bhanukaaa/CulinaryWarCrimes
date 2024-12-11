@@ -12,7 +12,8 @@ ChefNPC::ChefNPC(Vector2& initPos) : StaffNPC(initPos) {
 }
 
 void ChefNPC::renderNPC() {
-    DrawPoly(position, 8, NPC_RADIUS, 5, RAYWHITE);
+    DrawPoly(position, 8, NPC_RADIUS, 5, BLACK);
+    DrawPoly(position, 8, NPC_RADIUS - 2, 5, RAYWHITE);
 }
 
 void ChefNPC::jobUpdate(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]) {
@@ -33,5 +34,7 @@ void ChefNPC::jobUpdate(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE
         pathFind(closest, tileArray);
         targetSet = true;
         currTarget = closest;
+        currTarget.x += TILE_SIZE / 2;
+        currTarget.y += TILE_SIZE / 2;
     }
 }

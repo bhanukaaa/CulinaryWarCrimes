@@ -127,16 +127,18 @@ void BaseNPC::updateNPC(std::vector<Vector2>& surrounding) {
         if (Vector2Distance(position, targetPosition) < 5.0f)
             currentPath.erase(currentPath.begin());
         if (currentPath.empty()) velocity = {0, 0};
-    } else if (currTarget.x != -1) {
+    }
+    else if (currTarget.x != -1) {
         if (Vector2Distance(currTarget, position) > 10) {
             Vector2 direction = Vector2Normalize(Vector2Subtract(currTarget, position));
             acceleration = Vector2Scale(direction, GetRandomValue(10, 30));
         } else {
-            acceleration.x = GetRandomValue(-2, 2);
-            acceleration.y = GetRandomValue(-2, 2);
+            acceleration.x = GetRandomValue(-5, 5);
+            acceleration.y = GetRandomValue(-5, 5);
         }
         velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
-    } else {
+    }
+    else {
         velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
         acceleration.x = GetRandomValue(-100, 100);
         acceleration.y = GetRandomValue(-100, 100);
