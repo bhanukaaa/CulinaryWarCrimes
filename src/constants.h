@@ -1,0 +1,5 @@
+#define MAP_WIDTH 3000
+#define MAP_HEIGHT 4000
+#define TILE_SIZE 50
+
+#define NPC_RADIUS 20
