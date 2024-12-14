@@ -7,16 +7,6 @@
 
 extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
-struct Node {
-    Vector2 position;
-    float gCost;
-    float hCost;
-    float fCost() { return gCost + hCost; }
-    Node* parent;
-
-    Node(Vector2 pos) : position(pos), gCost(0), hCost(0), parent(nullptr) {}
-};
-
 BaseNPC::BaseNPC(Vector2& initPos) {
     position = initPos;
     velocity = {(float) GetRandomValue(-1, 1), -10};
@@ -26,6 +16,73 @@ BaseNPC::BaseNPC(Vector2& initPos) {
 void BaseNPC::renderNPC() {
     DrawPoly(position, 8, NPC_RADIUS, 0, DARKBLUE);
 }
+
+void BaseNPC::updateNPC() {
+    if (!currentPath.empty()) { // following path
+        Vector2 targetPosition = currentPath.front();
+        targetPosition.x *= TILE_SIZE;
+        targetPosition.y *= TILE_SIZE;
+        targetPosition.x += HALF_TILE_SIZE;
+        targetPosition.y += HALF_TILE_SIZE;
+        Vector2 direction = Vector2Normalize(Vector2Subtract(targetPosition, position));
+
+        velocity = Vector2Scale(direction, 100.0f);
+        if (Vector2Distance(position, targetPosition) < 5.0f)
+            currentPath.erase(currentPath.begin());
+        if (currentPath.empty()) velocity = Vector2Scale(velocity, 0.1);
+    } // target set, no path
+    else if (currTarget.x != -1) {
+        if (Vector2Distance(currTarget, position) > 10) {
+            Vector2 direction = Vector2Normalize(Vector2Subtract(currTarget, position));
+            acceleration = Vector2Scale(direction, GetRandomValue(10, 30));
+        } else {
+            acceleration.x = GetRandomValue(-10, 10);
+            acceleration.y = GetRandomValue(-10, 10);
+        }
+        velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
+        velocity = Vector2Scale(velocity, 0.99);
+    } // free will
+    else {
+        velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
+        acceleration.x = GetRandomValue(-100, 100);
+        acceleration.y = GetRandomValue(-100, 100);
+    }
+
+    Vector2 newPos = Vector2Add(position, Vector2Scale(velocity, GetFrameTime()));
+    bool colliding = false;
+
+    int tileCoordsX = floor(position.x / TILE_SIZE);
+    int tileCoordsY = floor(position.y / TILE_SIZE);
+    for (int xOff = -1; xOff < 2; xOff++) {
+        for (int yOff = -1; yOff < 2; yOff++) {
+            if (xOff == 0 && yOff == 0) continue;
+            if (tileArray[tileCoordsX + xOff][tileCoordsY + yOff] == 0) continue;
+            Rectangle tile = {(float) (tileCoordsX + xOff) * TILE_SIZE, (float) (tileCoordsY + yOff) * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            if (CheckCollisionCircleRec(newPos, NPC_RADIUS, tile)) {
+                colliding = true;
+                velocity = Vector2Invert(velocity);
+                break;
+            }
+        }
+    }
+
+    if (newPos.x + NPC_RADIUS > MAP_WIDTH || newPos.y + NPC_RADIUS > MAP_HEIGHT || newPos.x - NPC_RADIUS < 0 || newPos.y - NPC_RADIUS < 0) {
+        velocity = Vector2Invert(velocity);
+        colliding = true;
+    }
+
+    if (!colliding) position = newPos;
+}
+
+struct Node {
+    Vector2 position;
+    float gCost;
+    float hCost;
+    float fCost() { return gCost + hCost; }
+    Node* parent;
+
+    Node(Vector2 pos) : position(pos), gCost(0), hCost(0), parent(nullptr) {}
+};
 
 float BaseNPC::heuristic(Vector2& a, Vector2& b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
@@ -42,6 +99,8 @@ void BaseNPC::pathFind(Vector2& target) {
 
     Vector2 startTile = {floor(position.x / TILE_SIZE), floor(position.y / TILE_SIZE)};
     Vector2 targetTile = {floor(target.x / TILE_SIZE), floor(target.y / TILE_SIZE)};
+
+    if (tileArray[(int) targetTile.x][(int) targetTile.y] !=  0) return;
 
     Node* startNode = new Node(startTile);
     Node* targetNode = new Node(targetTile);
@@ -111,52 +170,4 @@ void BaseNPC::pathFind(Vector2& target) {
         }
     }
     currentPath.clear();
-}
-
-void BaseNPC::updateNPC(std::vector<Vector2>& surrounding) {
-    if (!currentPath.empty()) {
-        Vector2 targetPosition = currentPath.front();
-        targetPosition.x *= TILE_SIZE;
-        targetPosition.y *= TILE_SIZE;
-        targetPosition.x += HALF_TILE_SIZE;
-        targetPosition.y += HALF_TILE_SIZE;
-        Vector2 direction = Vector2Normalize(Vector2Subtract(targetPosition, position));
-
-        velocity = Vector2Scale(direction, 100.0f);
-        if (Vector2Distance(position, targetPosition) < 5.0f)
-            currentPath.erase(currentPath.begin());
-        if (currentPath.empty()) velocity = {0, 0};
-    }
-    else if (currTarget.x != -1) {
-        if (Vector2Distance(currTarget, position) > 10) {
-            Vector2 direction = Vector2Normalize(Vector2Subtract(currTarget, position));
-            acceleration = Vector2Scale(direction, GetRandomValue(10, 30));
-        } else {
-            acceleration.x = GetRandomValue(-5, 5);
-            acceleration.y = GetRandomValue(-5, 5);
-        }
-        velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
-    }
-    else {
-        velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
-        acceleration.x = GetRandomValue(-100, 100);
-        acceleration.y = GetRandomValue(-100, 100);
-    }
-
-    Vector2 newPos = Vector2Add(position, Vector2Scale(velocity, GetFrameTime()));
-    bool colliding = false;
-    for (size_t s = 0; s < surrounding.size(); s++) {
-        if (CheckCollisionCircleRec(newPos, NPC_RADIUS, (Rectangle) {surrounding[s].x * TILE_SIZE, surrounding[s].y * TILE_SIZE, TILE_SIZE, TILE_SIZE})) {
-            colliding = true;
-            velocity = Vector2Invert(velocity);
-            break;
-        }
-    }
-
-    if (newPos.x + NPC_RADIUS > MAP_WIDTH || newPos.y + NPC_RADIUS > MAP_HEIGHT || newPos.x - NPC_RADIUS < 0 || newPos.y - NPC_RADIUS < 0) {
-        velocity = Vector2Invert(velocity);
-        colliding = true;
-    }
-
-    if (!colliding) position = newPos;
 }

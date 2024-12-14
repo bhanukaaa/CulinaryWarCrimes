@@ -3,11 +3,10 @@
 
 Cooker::Cooker(Vector2 initPos) : KitchenObject(initPos) {
     position = initPos;
-    occupied = false;
     ready = false;
 }
 
 void Cooker::render() {
-    DrawRectangle(position.x, position.y, TILE_SIZE - 4, TILE_SIZE - 4, WHITE);
-    DrawRectangle(position.x + 3, position.y + 10, TILE_SIZE - 10, TILE_SIZE - 17, GRAY);
+    DrawRectangle(position.x + 2, position.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, WHITE);
+    DrawRectangle(position.x + 5, position.y + 12, TILE_SIZE - 10, TILE_SIZE - 17, GRAY);
 }

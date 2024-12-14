@@ -3,6 +3,8 @@
 
 KitchenObject::KitchenObject(Vector2 initPos) {
     position = initPos;
+    inQueue = false;
+    occupied = false;
 }
 
 void KitchenObject::render() {

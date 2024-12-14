@@ -1,8 +1,8 @@
 #include "classes.h"
 #include "constants.h"
 
-#include <thread>
 #include <raymath.h>
+#include <thread>
 
 extern std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
 extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
@@ -36,7 +36,6 @@ void ChefNPC::jobUpdate() {
             currObject = closest;
             currTarget.x += HALF_TILE_SIZE;
             currTarget.y += HALF_TILE_SIZE;
-
             currObject->occupied = true;
         }
     }

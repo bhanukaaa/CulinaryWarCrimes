@@ -14,6 +14,7 @@ class KitchenObject {
     public:
         Vector2 position;
         bool occupied;
+        bool inQueue;
 
         KitchenObject(Vector2);
         virtual void render();
@@ -21,7 +22,7 @@ class KitchenObject {
 
 class Cooker : public KitchenObject {
     public:
-        short type;
+        short variant;
         bool ready;
         Cooker(Vector2);
         void render() override;
@@ -36,13 +37,12 @@ class BaseNPC {
         Vector2 position;
         Vector2 velocity;
         Vector2 acceleration;
-        bool kill = false;
         std::vector<Vector2> currentPath;
         Vector2 currTarget;
 
         BaseNPC(Vector2&);
         virtual void renderNPC();
-        void updateNPC(std::vector<Vector2>&);
+        void updateNPC();
         void pathFind(Vector2& target);
         float heuristic(Vector2&, Vector2&);
 };
@@ -60,5 +60,21 @@ class ChefNPC : public StaffNPC {
         void jobUpdate();
 };
 
+
+// ------------------------------------------------------------------
+
+
+class Job {
+    public:
+        Vector2 position;
+        bool active = true;
+};
+
+
+class JobKitchen : public Job {
+    public:
+        KitchenObject* target;
+        JobKitchen(const Vector2&, KitchenObject*);
+};
 
 #endif
