@@ -13,6 +13,7 @@
 class KitchenObject {
     public:
         Vector2 position;
+        bool occupied;
 
         KitchenObject(Vector2);
         virtual void render();
@@ -21,7 +22,6 @@ class KitchenObject {
 class Cooker : public KitchenObject {
     public:
         short type;
-        bool occupied;
         bool ready;
         Cooker(Vector2);
         void render() override;
@@ -43,7 +43,7 @@ class BaseNPC {
         BaseNPC(Vector2&);
         virtual void renderNPC();
         void updateNPC(std::vector<Vector2>&);
-        void pathFind(Vector2& target, short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]);
+        void pathFind(Vector2& target);
         float heuristic(Vector2&, Vector2&);
 };
 
@@ -54,10 +54,10 @@ class StaffNPC : public BaseNPC {
 
 class ChefNPC : public StaffNPC {
     public:
-        bool targetSet;
+        KitchenObject* currObject;
         ChefNPC(Vector2&);
         void renderNPC() override;
-        void jobUpdate(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]);
+        void jobUpdate();
 };
 
 

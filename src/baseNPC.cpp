@@ -1,11 +1,11 @@
 #include "constants.h"
 #include "classes.h"
 
-#include <iostream>
 #include <raymath.h>
 #include <algorithm>
 #include <queue>
 
+extern short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
 
 struct Node {
     Vector2 position;
@@ -31,7 +31,7 @@ float BaseNPC::heuristic(Vector2& a, Vector2& b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
 
-void BaseNPC::pathFind(Vector2& target, short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]) {
+void BaseNPC::pathFind(Vector2& target) {
     auto compare = [](Node* a, Node* b) {
         return (a->gCost + a->hCost) > (b->gCost + b->hCost);
     };
@@ -110,7 +110,6 @@ void BaseNPC::pathFind(Vector2& target, short tileArray[MAP_WIDTH / TILE_SIZE][M
             }
         }
     }
-
     currentPath.clear();
 }
 

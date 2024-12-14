@@ -10,11 +10,13 @@
 const int screenWidth = 1600;
 const int screenHeight = 900;
 
+Camera2D camera;
 std::vector<Vector2> blocks;
 std::vector<std::unique_ptr<StaffNPC>> staff;
 std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
+short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
 
-void cameraMovement(Camera2D& camera, short camMovX, short camMovY) {
+void cameraMovement(short camMovX, short camMovY) {
     camera.target.x += camMovX * 15;
     camera.target.y += camMovY * 15;
 
@@ -24,22 +26,22 @@ void cameraMovement(Camera2D& camera, short camMovX, short camMovY) {
     if (camera.target.y > MAP_HEIGHT) camera.target.y = MAP_HEIGHT;
 }
 
-void place(short x, short y, short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE], std::vector<Vector2>& blocks) {
+void place(short x, short y) {
     if (tileArray[x][y] == 0) {
         blocks.push_back((Vector2) {(float) x, (float) y});
         tileArray[x][y] = 1;
     }
 }
 
-void blockPlacement(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE], std::vector<Vector2>& blocks, Camera2D& camera) {
+void blockPlacement() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
 
-    place(tileCoordsX, tileCoordsY, tileArray, blocks);
+    place(tileCoordsX, tileCoordsY);
 }
 
-void boxPlacement(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE], std::vector<Vector2>& blocks, Camera2D& camera) {
+void boxPlacement() {
     static Vector2 first = {-1, -1};
 
     if (first.x == -1) first = GetScreenToWorld2D(GetMousePosition(), camera);
@@ -52,17 +54,17 @@ void boxPlacement(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]
         first = {-1, -1};
 
         for (int x = std::min(tileCoordsXF, tileCoordsXS); x <= std::max(tileCoordsXF, tileCoordsXS); x++) {
-            place(x, tileCoordsYF, tileArray, blocks);
-            place(x, tileCoordsYS, tileArray, blocks);
+            place(x, tileCoordsYF);
+            place(x, tileCoordsYS);
         }
         for (int y = std::min(tileCoordsYF, tileCoordsYS); y <= std::max(tileCoordsYF, tileCoordsYS); y++) {
-            place(tileCoordsXF, y, tileArray, blocks);
-            place(tileCoordsXS, y, tileArray, blocks);
+            place(tileCoordsXF, y);
+            place(tileCoordsXS, y);
         }
     }
 }
 
-void blockDeletion(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE], std::vector<Vector2>& blocks, Camera2D& camera) {
+void blockDeletion() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
@@ -80,13 +82,13 @@ void blockDeletion(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE
     }
 }
 
-void npcPlacement(Camera2D& camera) {
+void npcPlacement() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     staff.push_back(std::make_unique<StaffNPC>(worldMousePosition));
     staff.push_back(std::make_unique<ChefNPC>(worldMousePosition));
 }
 
-void npcDeletion(Camera2D& camera, int& balance) {
+void npcDeletion(int& balance) {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     for (auto& npc : staff) {
         if (CheckCollisionPointCircle(worldMousePosition, npc->position, NPC_RADIUS)) {
@@ -96,7 +98,7 @@ void npcDeletion(Camera2D& camera, int& balance) {
     }
 }
 
-void objectPlacement(Camera2D& camera, int& balance) {
+void objectPlacement(int& balance) {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
@@ -128,7 +130,7 @@ void drawMainUI(short& uiMode, int& balance) {
     DrawText(TextFormat("$%d", balance), 20, screenHeight - 50, 40, WHITE);
 }
 
-void drawWorld(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]) {
+void drawWorld() {
     DrawRectangle(0, 0, MAP_WIDTH, MAP_HEIGHT - TILE_SIZE * 7, DARKGREEN);
     DrawRectangle(0, MAP_HEIGHT - TILE_SIZE * 7, MAP_WIDTH, TILE_SIZE, GRAY);
     DrawRectangle(0, MAP_HEIGHT - TILE_SIZE * 6, MAP_WIDTH, TILE_SIZE * 6, DARKGRAY);
@@ -147,9 +149,7 @@ void drawWorld(short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE]) {
     for (auto& npc : staff) {
         npc->renderNPC();
         if (ChefNPC* chef = dynamic_cast<ChefNPC*>(npc.get())) {
-            if (!chef->targetSet) {
-                chef->jobUpdate(tileArray);
-            } 
+            chef->jobUpdate();
         }
     }
 }
@@ -159,15 +159,13 @@ int main(void) {
     SetExitKey(KEY_NULL);
     SetTargetFPS(60);
 
-    Camera2D camera = {0};
     short camMovX, camMovY;
+    camera = {0};
     camera.target = (Vector2) {MAP_WIDTH / 2, MAP_HEIGHT - 450};
     camera.offset = (Vector2) {screenWidth / 2.0f, screenHeight / 2.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
-
-    short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
     for (int x = 0; x < MAP_WIDTH / TILE_SIZE; x++)
         for (int y = 0; y < MAP_HEIGHT / TILE_SIZE; y++)
             tileArray[x][y] = 0;
@@ -194,29 +192,29 @@ int main(void) {
         if (IsKeyDown(KEY_A)) camMovX -= 1;
         if (IsKeyDown(KEY_S)) camMovY += 1;
         if (IsKeyDown(KEY_D)) camMovX += 1;
-        cameraMovement(camera, camMovX, camMovY);
+        cameraMovement(camMovX, camMovY);
 
         if (uiMode == 1 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            blockPlacement(tileArray, blocks, camera);
+            blockPlacement();
 
         if (uiMode == 1 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
-            boxPlacement(tileArray, blocks, camera);
+            boxPlacement();
 
         if (uiMode == 2 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            blockDeletion(tileArray, blocks, camera);
+            blockDeletion();
 
         if (uiMode == 3 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             if (balance >= 1000) {
-                npcPlacement(camera);
+                npcPlacement();
                 balance -= 1000;
             }
         }
 
         if (uiMode == 3 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
-            npcDeletion(camera, balance);
+            npcDeletion(balance);
 
         if (uiMode == 4 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            objectPlacement(camera, balance);
+            objectPlacement(balance);
 
         // temp
         if (uiMode == 0 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
@@ -224,7 +222,7 @@ int main(void) {
             std::vector<std::thread> threads;
             for (size_t n = 0; n < staff.size(); n++) {
                 threads.emplace_back([&, n]() {
-                    staff[n]->pathFind(worldMousePosition, tileArray);
+                    staff[n]->pathFind(worldMousePosition);
                 });
             }
             for (auto& t : threads) t.join();
@@ -249,7 +247,7 @@ int main(void) {
             ClearBackground(BLACK);
 
             BeginMode2D(camera);
-                drawWorld(tileArray);
+                drawWorld();
             EndMode2D();
 
             drawMainUI(uiMode, balance);
