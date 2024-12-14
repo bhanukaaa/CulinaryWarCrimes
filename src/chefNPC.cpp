@@ -5,7 +5,7 @@
 #include <raymath.h>
 
 extern std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
-extern short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
+extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 ChefNPC::ChefNPC(Vector2& initPos) : StaffNPC(initPos) {
     position = initPos;
@@ -34,14 +34,14 @@ void ChefNPC::jobUpdate() {
         if (minDist != __FLT_MAX__) {
             currTarget = closest->position;
             currObject = closest;
-            currTarget.x += TILE_SIZE / 2;
-            currTarget.y += TILE_SIZE / 2;
+            currTarget.x += HALF_TILE_SIZE;
+            currTarget.y += HALF_TILE_SIZE;
 
             currObject->occupied = true;
         }
     }
     
-    if (currTarget.x != -1 && currentPath.empty() && !CheckCollisionPointRec(position, (Rectangle) {currTarget.x - TILE_SIZE / 2, currTarget.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE})) {
+    if (currTarget.x != -1 && currentPath.empty() && !CheckCollisionPointRec(position, (Rectangle) {currTarget.x - HALF_TILE_SIZE, currTarget.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE})) {
         pathFind(currTarget);
     }
 }

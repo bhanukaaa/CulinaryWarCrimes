@@ -14,7 +14,7 @@ Camera2D camera;
 std::vector<Vector2> blocks;
 std::vector<std::unique_ptr<StaffNPC>> staff;
 std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
-short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
+short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 void cameraMovement(short camMovX, short camMovY) {
     camera.target.x += camMovX * 15;
@@ -166,8 +166,8 @@ int main(void) {
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
-    for (int x = 0; x < MAP_WIDTH / TILE_SIZE; x++)
-        for (int y = 0; y < MAP_HEIGHT / TILE_SIZE; y++)
+    for (int x = 0; x < MAP_WIDTH_TILE; x++)
+        for (int y = 0; y < MAP_HEIGHT_TILE; y++)
             tileArray[x][y] = 0;
 
     short uiMode = 0;

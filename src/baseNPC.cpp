@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <queue>
 
-extern short tileArray[MAP_WIDTH / TILE_SIZE][MAP_HEIGHT / TILE_SIZE];
+extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 struct Node {
     Vector2 position;
@@ -70,7 +70,7 @@ void BaseNPC::pathFind(Vector2& target) {
 
                 Vector2 neighbor = {current->position.x + dx, current->position.y + dy};
 
-                if (neighbor.x < 0 || neighbor.x >= MAP_WIDTH / TILE_SIZE || neighbor.y < 0 || neighbor.y >= MAP_HEIGHT / TILE_SIZE) continue;
+                if (neighbor.x < 0 || neighbor.x >= MAP_WIDTH_TILE || neighbor.y < 0 || neighbor.y >= MAP_HEIGHT_TILE) continue;
                 if (tileArray[(int) neighbor.x][(int) neighbor.y] != 0) continue;
                 if (dx + dy != 1 && dx + dy != -1) { // diagonal cell
                     if (tileArray[(int) neighbor.x][(int) current->position.y] != 0) continue;
@@ -118,8 +118,8 @@ void BaseNPC::updateNPC(std::vector<Vector2>& surrounding) {
         Vector2 targetPosition = currentPath.front();
         targetPosition.x *= TILE_SIZE;
         targetPosition.y *= TILE_SIZE;
-        targetPosition.x += TILE_SIZE / 2;
-        targetPosition.y += TILE_SIZE / 2;
+        targetPosition.x += HALF_TILE_SIZE;
+        targetPosition.y += HALF_TILE_SIZE;
         Vector2 direction = Vector2Normalize(Vector2Subtract(targetPosition, position));
 
         velocity = Vector2Scale(direction, 100.0f);
