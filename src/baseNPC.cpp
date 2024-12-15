@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <queue>
 
+using std::vector;
+using std::priority_queue;
+
 extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 BaseNPC::BaseNPC(Vector2& initPos) {
@@ -18,7 +21,8 @@ void BaseNPC::renderNPC() {
 }
 
 void BaseNPC::updateNPC() {
-    if (!currentPath.empty()) { // following path
+    if (!currentPath.empty()) {
+        // following path
         Vector2 targetPosition = currentPath.front();
         targetPosition.x *= TILE_SIZE;
         targetPosition.y *= TILE_SIZE;
@@ -93,9 +97,9 @@ void BaseNPC::pathFind(Vector2& target) {
         return (a->gCost + a->hCost) > (b->gCost + b->hCost);
     };
 
-    std::priority_queue<Node*, std::vector<Node*>, decltype(compare)> openList(compare);
-    std::vector<Node*> closedList;
-    std::vector<Vector2> path;
+    priority_queue<Node*, vector<Node*>, decltype(compare)> openList(compare);
+    vector<Node*> closedList;
+    vector<Vector2> path;
 
     Vector2 startTile = {floor(position.x / TILE_SIZE), floor(position.y / TILE_SIZE)};
     Vector2 targetTile = {floor(target.x / TILE_SIZE), floor(target.y / TILE_SIZE)};
@@ -152,7 +156,7 @@ void BaseNPC::pathFind(Vector2& target) {
                 neighborNode->parent = current;
 
                 bool inOpen = false;
-                std::vector<Node*> tempNodes;
+                vector<Node*> tempNodes;
 
                 while (!openList.empty()) {
                     Node* node = openList.top();

@@ -15,15 +15,16 @@ class KitchenObject {
         Vector2 position;
         bool occupied;
         bool inQueue;
+        float progress;
 
         KitchenObject(Vector2);
         virtual void render();
+        void update();
 };
 
 class Cooker : public KitchenObject {
     public:
         short variant;
-        bool ready;
         Cooker(Vector2);
         void render() override;
 };
@@ -73,7 +74,7 @@ class Job {
 
 class JobKitchen : public Job {
     public:
-        KitchenObject* target;
+        KitchenObject* object;
         JobKitchen(const Vector2&, KitchenObject*);
 };
 

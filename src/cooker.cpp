@@ -3,7 +3,7 @@
 
 Cooker::Cooker(Vector2 initPos) : KitchenObject(initPos) {
     position = initPos;
-    ready = false;
+    progress = 100;
 }
 
 void Cooker::render() {

@@ -2,12 +2,19 @@
 #include "classes.h"
 #include "game.h"
 
+using std::vector;
+using std::unique_ptr;
+using std::deque;
+using std::thread;
+using std::cout;
+
 // TODO: -----------------------------------------------------
 
 // job queue handling
-// textures
-// job progress
+// transport queue (src-dest)
+// job progress as member func
 // path find again upon blockage
+// textures
 
 // globals ----------------------------------------------------
 
@@ -15,13 +22,13 @@ const int screenWidth = 1600;
 const int screenHeight = 900;
 Camera2D camera;
 
-std::vector<Vector2> blocks;
+vector<Vector2> blocks;
 short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
-std::vector<std::unique_ptr<StaffNPC>> staff;
-std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
+vector<unique_ptr<StaffNPC>> staff;
+vector<unique_ptr<KitchenObject>> objectsKitchen;
 
-std::deque<JobKitchen> jobQueueKitchen;
+deque<JobKitchen> jobQueueKitchen;
 
 // rendering --------------------------------------------------
 
@@ -46,27 +53,27 @@ void drawWorld() {
 
 void drawMainUI(short& uiMode, int& balance) {
     switch (uiMode) {
-        case 0:
+        case UI_MODE_NORMAL:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BLUE);
             DrawText("Normal", 7, 7, 30, BLACK);
             DrawText("Normal", 5, 5, 30, WHITE);
             break;
-        case 1:
+        case UI_MODE_BUILD:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, YELLOW);
             DrawText("Build", 7, 7, 30, BLACK);
             DrawText("Build", 5, 5, 30, WHITE);
             break;
-        case 2:
+        case UI_MODE_DESTROY:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, RED);
             DrawText("Destroy", 7, 7, 30, BLACK);
             DrawText("Destroy", 5, 5, 30, WHITE);
             break;
-        case 3:
+        case UI_MODE_STAFF:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BROWN);
             DrawText("Staff", 7, 7, 30, BLACK);
             DrawText("Staff", 5, 5, 30, WHITE);
             break;
-        case 4:
+        case UI_MODE_OBJECT:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, PURPLE);
             DrawText("Object", 7, 7, 30, BLACK);
             DrawText("Object", 5, 5, 30, WHITE);
@@ -88,11 +95,12 @@ void updateLogic() {
     }
 
     for (auto& object : objectsKitchen) {
-        if (object->inQueue) continue;
-        if (object->occupied) continue;
-        jobQueueKitchen.push_back(JobKitchen(object->position, object.get()));
-        object->inQueue = true;
-        std::cout << "Added to Job Queue\n";
+        object->update();
+    }
+
+    while (!jobQueueKitchen.empty() && !jobQueueKitchen.front().active) {
+        jobQueueKitchen.front().object->inQueue = false;
+        jobQueueKitchen.pop_front();
     }
 }
 
@@ -118,11 +126,11 @@ int main(void) {
     int balance = 10000;
 
     while (!WindowShouldClose()) {
-        if (IsKeyReleased(KEY_ESCAPE)) uiMode = 0;
-        if (IsKeyReleased(KEY_B)) uiMode = 1;
-        if (IsKeyReleased(KEY_X)) uiMode = 2;
-        if (IsKeyReleased(KEY_H)) uiMode = 3;
-        if (IsKeyReleased(KEY_O)) uiMode = 4;
+        if (IsKeyReleased(KEY_ESCAPE)) uiMode = UI_MODE_NORMAL;
+        if (IsKeyReleased(KEY_B)) uiMode = UI_MODE_BUILD;
+        if (IsKeyReleased(KEY_X)) uiMode = UI_MODE_DESTROY;
+        if (IsKeyReleased(KEY_H)) uiMode = UI_MODE_STAFF;
+        if (IsKeyReleased(KEY_O)) uiMode = UI_MODE_OBJECT;
 
         // temp
         if (IsKeyDown(KEY_BACKSLASH)) balance += 7193;
@@ -162,7 +170,7 @@ int main(void) {
         // temp
         if (uiMode == 0 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
             Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
-            std::vector<std::thread> threads;
+            vector<thread> threads;
             for (size_t n = 0; n < staff.size(); n++) {
                 threads.emplace_back([&, n]() {
                     staff[n]->pathFind(worldMousePosition);

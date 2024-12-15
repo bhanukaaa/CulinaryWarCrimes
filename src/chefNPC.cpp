@@ -3,9 +3,15 @@
 
 #include <raymath.h>
 #include <thread>
+#include <queue>
 
-extern std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
+using std::vector;
+using std::unique_ptr;
+using std::deque;
+
+extern vector<unique_ptr<KitchenObject>> objectsKitchen;
 extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
+extern deque<JobKitchen> jobQueueKitchen;
 
 ChefNPC::ChefNPC(Vector2& initPos) : StaffNPC(initPos) {
     position = initPos;
@@ -18,29 +24,23 @@ void ChefNPC::renderNPC() {
 
 void ChefNPC::jobUpdate() {
     if (currTarget.x == -1) {
-        float minDist = __FLT_MAX__;
-        KitchenObject* closest;
-        for (auto& object : objectsKitchen) {
-            if (Cooker* cooker = dynamic_cast<Cooker*>(object.get())) {
-                if (cooker->occupied) continue;
-                float dist = Vector2Distance(cooker->position, position);
-                if (dist < minDist) {
-                    closest = cooker;
-                    minDist = dist;
-                }
-            }
-        }
-
-        if (minDist != __FLT_MAX__) {
-            currTarget = closest->position;
-            currObject = closest;
+        for (auto& job : jobQueueKitchen) {
+            if (!job.active) continue;
+            currObject = job.object;
+            currTarget = job.position;
             currTarget.x += HALF_TILE_SIZE;
             currTarget.y += HALF_TILE_SIZE;
             currObject->occupied = true;
+            job.active = false;
+            break;
         }
     }
-    
-    if (currTarget.x != -1 && currentPath.empty() && !CheckCollisionPointRec(position, (Rectangle) {currTarget.x - HALF_TILE_SIZE, currTarget.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE})) {
-        pathFind(currTarget);
+
+    if (currTarget.x != -1 && currentPath.empty()) {
+        if (!CheckCollisionPointRec(position, (Rectangle) {currTarget.x - HALF_TILE_SIZE, currTarget.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE})) {
+            pathFind(currTarget);
+        } else {
+            currObject->progress -= 0.5;
+        }
     }
 }

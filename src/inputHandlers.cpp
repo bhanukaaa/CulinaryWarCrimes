@@ -2,11 +2,14 @@
 #include "classes.h"
 #include "game.h"
 
+using std::vector;
+using std::unique_ptr;
+
 extern Camera2D camera;
-extern std::vector<Vector2> blocks;
+extern vector<Vector2> blocks;
 extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
-extern std::vector<std::unique_ptr<StaffNPC>> staff;
-extern std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
+extern vector<unique_ptr<StaffNPC>> staff;
+extern vector<unique_ptr<KitchenObject>> objectsKitchen;
 
 void cameraMovement(short camMovX, short camMovY) {
     camera.target.x += camMovX * 15;

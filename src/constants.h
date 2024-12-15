@@ -8,4 +8,10 @@
 #define MAP_WIDTH_TILE 60
 #define MAP_HEIGHT_TILE 80
 
+#define UI_MODE_NORMAL 0
+#define UI_MODE_BUILD 1
+#define UI_MODE_DESTROY 2
+#define UI_MODE_STAFF 3
+#define UI_MODE_OBJECT 4
+
 #define NPC_RADIUS 20
