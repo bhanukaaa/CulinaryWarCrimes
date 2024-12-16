@@ -10,11 +10,10 @@ using std::cout;
 
 // TODO: -----------------------------------------------------
 
-// job queue handling
-// transport queue (src-dest)
-// job progress as member func
+// move job assignment and handling to kitchenNPC class
+// fix seg fault when deleting object in job queue
 // path find again upon blockage
-// textures
+// change tile array rep of walls
 
 // globals ----------------------------------------------------
 
@@ -25,10 +24,11 @@ Camera2D camera;
 vector<Vector2> blocks;
 short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
-vector<unique_ptr<StaffNPC>> staff;
+vector<unique_ptr<KitchenNPC>> staffKitchen;
 vector<unique_ptr<KitchenObject>> objectsKitchen;
 
-deque<JobKitchen> jobQueueKitchen;
+deque<KitchenJob> jobQueueKitchen;
+deque<TransportJob> transportQueueKitchen;
 
 // rendering --------------------------------------------------
 
@@ -48,10 +48,10 @@ void drawWorld() {
         DrawRectangle(blocks[b].x * TILE_SIZE, blocks[b].y * TILE_SIZE, TILE_SIZE, TILE_SIZE, DARKBROWN);
 
     for (auto& object : objectsKitchen) object->render();
-    for (auto& npc : staff) npc->renderNPC();
+    for (auto& npc : staffKitchen) npc->renderNPC();
 }
 
-void drawMainUI(short& uiMode, int& balance) {
+void drawMainUI(short& uiMode, int& balance, int& selectedID) {
     switch (uiMode) {
         case UI_MODE_NORMAL:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BLUE);
@@ -77,6 +77,8 @@ void drawMainUI(short& uiMode, int& balance) {
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, PURPLE);
             DrawText("Object", 7, 7, 30, BLACK);
             DrawText("Object", 5, 5, 30, WHITE);
+            DrawText(TextFormat("Selected ID: %d", selectedID), 9, 47, 30, BLACK);
+            DrawText(TextFormat("Selected ID: %d", selectedID), 7, 45, 30, WHITE);
             break;
     }
 
@@ -88,7 +90,8 @@ void drawMainUI(short& uiMode, int& balance) {
 // logic ------------------------------------------------------
 
 void updateLogic() {
-    for (auto& npc : staff) {
+    cout << "Queues; " << jobQueueKitchen.size() << " Jobs,   " << transportQueueKitchen.size() << " TSPT" << "\n";
+    for (auto& npc : staffKitchen) {
         if (ChefNPC* chef = dynamic_cast<ChefNPC*>(npc.get()))
             chef->jobUpdate();
         npc->updateNPC();
@@ -99,8 +102,11 @@ void updateLogic() {
     }
 
     while (!jobQueueKitchen.empty() && !jobQueueKitchen.front().active) {
-        jobQueueKitchen.front().object->inQueue = false;
         jobQueueKitchen.pop_front();
+    }
+
+    while (!transportQueueKitchen.empty() && !transportQueueKitchen.front().active) {
+        transportQueueKitchen.pop_front();
     }
 }
 
@@ -123,6 +129,7 @@ int main(void) {
             tileArray[x][y] = 0;
 
     short uiMode = 0;
+    int selectedID = 0;
     int balance = 10000;
 
     while (!WindowShouldClose()) {
@@ -131,6 +138,9 @@ int main(void) {
         if (IsKeyReleased(KEY_X)) uiMode = UI_MODE_DESTROY;
         if (IsKeyReleased(KEY_H)) uiMode = UI_MODE_STAFF;
         if (IsKeyReleased(KEY_O)) uiMode = UI_MODE_OBJECT;
+
+        if (uiMode == UI_MODE_OBJECT || uiMode == UI_MODE_STAFF)
+            selectionChange(uiMode, selectedID); 
 
         // temp
         if (IsKeyDown(KEY_BACKSLASH)) balance += 7193;
@@ -165,15 +175,18 @@ int main(void) {
             npcDeletion(balance);
 
         if (uiMode == 4 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            objectPlacement(balance);
+            objectPlacement(balance, selectedID);
+
+        if (uiMode == 4 && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+            objectDeletion(balance);
 
         // temp
         if (uiMode == 0 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
             Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
             vector<thread> threads;
-            for (size_t n = 0; n < staff.size(); n++) {
+            for (size_t n = 0; n < staffKitchen.size(); n++) {
                 threads.emplace_back([&, n]() {
-                    staff[n]->pathFind(worldMousePosition);
+                    staffKitchen[n]->pathFind(worldMousePosition);
                 });
             }
             for (auto& t : threads) t.join();
@@ -189,7 +202,7 @@ int main(void) {
                 drawWorld();
             EndMode2D();
 
-            drawMainUI(uiMode, balance);
+            drawMainUI(uiMode, balance, selectedID);
         EndDrawing();
     }
 

@@ -15,6 +15,8 @@ void boxPlacement();
 void blockDeletion();
 void npcPlacement();
 void npcDeletion(int&);
-void objectPlacement(int&);
+void objectPlacement(int&, int&);
+void objectDeletion(int&);
+void selectionChange(short&, int&);
 
 #endif

@@ -36,8 +36,9 @@ void BaseNPC::updateNPC() {
         if (currentPath.empty()) velocity = Vector2Scale(velocity, 0.1);
     } // target set, no path
     else if (currTarget.x != -1) {
-        if (Vector2Distance(currTarget, position) > 10) {
-            Vector2 direction = Vector2Normalize(Vector2Subtract(currTarget, position));
+        Vector2 targetPos = {currTarget.x + HALF_TILE_SIZE, currTarget.y + HALF_TILE_SIZE}; 
+        if (Vector2Distance(targetPos, position) > 10) {
+            Vector2 direction = Vector2Normalize(Vector2Subtract(targetPos, position));
             acceleration = Vector2Scale(direction, GetRandomValue(10, 30));
         } else {
             acceleration.x = GetRandomValue(-10, 10);
