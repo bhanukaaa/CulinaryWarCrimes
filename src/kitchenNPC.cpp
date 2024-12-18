@@ -2,7 +2,7 @@
 #include "classes.h"
 
 KitchenNPC::KitchenNPC(Vector2& initPos) : BaseNPC(initPos) {
-    position = initPos;
+    currentJob = nullptr;
 }
 
 void KitchenNPC::resetJob() {

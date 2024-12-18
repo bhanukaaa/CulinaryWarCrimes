@@ -1,15 +1,10 @@
 #include "constants.h"
 #include "classes.h"
+#include "globals.h"
 #include "game.h"
 
 using std::vector;
 using std::unique_ptr;
-
-extern Camera2D camera;
-extern vector<Vector2> blocks;
-extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
-extern vector<unique_ptr<KitchenNPC>> staffKitchen;
-extern vector<unique_ptr<KitchenObject>> objectsKitchen;
 
 void cameraMovement(short camMovX, short camMovY) {
     camera.target.x += camMovX * 15;
@@ -79,11 +74,15 @@ void blockDeletion() {
 
 void npcPlacement() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
+    int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
+    int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
+    if (tileArray[tileCoordsX][tileCoordsY] != 0) return;
     staffKitchen.push_back(std::make_unique<ChefNPC>(worldMousePosition));
 }
 
 void npcDeletion(int& balance) {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
+
     for (auto s = staffKitchen.begin(); s != staffKitchen.end();) {
         if (CheckCollisionPointCircle(worldMousePosition, (*s)->position, NPC_RADIUS)) {
             balance += 750;
@@ -96,6 +95,7 @@ void objectPlacement(int& balance, int& selectedID) {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
+    if (tileArray[tileCoordsX][tileCoordsY] != 0) return;
 
     switch (selectedID) {
         case 0:
@@ -110,7 +110,12 @@ void objectPlacement(int& balance, int& selectedID) {
             objectsKitchen.push_back(std::make_unique<CounterObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
             balance -= 600;
             break;
+        case 3:
+            objectsDining.push_back(std::make_unique<TableObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
+            balance -= 600;
+            break;
     }
+    // add smth to tile array
 }
 
 void objectDeletion(int& balance) {
@@ -131,6 +136,6 @@ void selectionChange(short& uiMode, int& selectedID) {
     if (selectedID < 0) selectedID = 0;
 
     if (uiMode == UI_MODE_OBJECT) {
-        if (selectedID > 2) selectedID = 2;
+        if (selectedID > 3) selectedID = 3;
     }
 }

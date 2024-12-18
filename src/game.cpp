@@ -12,8 +12,9 @@ using std::cout;
 
 // move job assignment and handling to kitchenNPC class
 // fix seg fault when deleting object in job queue
-// path find again upon blockage
 // change tile array rep of walls
+// waiter, customer and workflows
+// unset job if path finding fails
 
 // globals ----------------------------------------------------
 
@@ -26,8 +27,9 @@ short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 vector<unique_ptr<KitchenNPC>> staffKitchen;
 vector<unique_ptr<KitchenObject>> objectsKitchen;
+vector<unique_ptr<DiningObject>> objectsDining;
 
-deque<KitchenJob> jobQueueKitchen;
+deque<BasicJob> jobQueueKitchen;
 deque<TransportJob> transportQueueKitchen;
 
 // rendering --------------------------------------------------
@@ -48,6 +50,7 @@ void drawWorld() {
         DrawRectangle(blocks[b].x * TILE_SIZE, blocks[b].y * TILE_SIZE, TILE_SIZE, TILE_SIZE, DARKBROWN);
 
     for (auto& object : objectsKitchen) object->render();
+    for (auto& object : objectsDining) object->render();
     for (auto& npc : staffKitchen) npc->renderNPC();
 }
 
@@ -82,7 +85,7 @@ void drawMainUI(short& uiMode, int& balance, int& selectedID) {
             break;
     }
 
-    DrawFPS(10, 40);
+    DrawFPS(10, 80);
     DrawText(TextFormat("$%d", balance), 22, screenHeight - 48, 40, BLACK);
     DrawText(TextFormat("$%d", balance), 19, screenHeight - 51, 40, WHITE);
 }
@@ -90,24 +93,19 @@ void drawMainUI(short& uiMode, int& balance, int& selectedID) {
 // logic ------------------------------------------------------
 
 void updateLogic() {
-    cout << "Queues; " << jobQueueKitchen.size() << " Jobs,   " << transportQueueKitchen.size() << " TSPT" << "\n";
     for (auto& npc : staffKitchen) {
         if (ChefNPC* chef = dynamic_cast<ChefNPC*>(npc.get()))
             chef->jobUpdate();
         npc->updateNPC();
     }
 
-    for (auto& object : objectsKitchen) {
-        object->update();
-    }
+    for (auto& object : objectsKitchen) object->update();
 
-    while (!jobQueueKitchen.empty() && !jobQueueKitchen.front().active) {
+    while (!jobQueueKitchen.empty() && !jobQueueKitchen.front().active)
         jobQueueKitchen.pop_front();
-    }
 
-    while (!transportQueueKitchen.empty() && !transportQueueKitchen.front().active) {
+    while (!transportQueueKitchen.empty() && !transportQueueKitchen.front().active)
         transportQueueKitchen.pop_front();
-    }
 }
 
 // ------------------------------------------------------------
@@ -142,8 +140,7 @@ int main(void) {
         if (uiMode == UI_MODE_OBJECT || uiMode == UI_MODE_STAFF)
             selectionChange(uiMode, selectedID); 
 
-        // temp
-        if (IsKeyDown(KEY_BACKSLASH)) balance += 7193;
+        if (IsKeyDown(KEY_BACKSLASH)) balance += 7193; // temp
 
         camera.zoom += ((float) GetMouseWheelMove() * 0.04f);
         if (camera.zoom > 3.0f) camera.zoom = 3.0f;

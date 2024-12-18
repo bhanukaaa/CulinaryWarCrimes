@@ -1,22 +1,16 @@
 #include "classes.h"
 #include "constants.h"
+#include "globals.h"
 
+#include <raymath.h>
 #include <iostream>
-#include <vector>
-#include <thread>
-#include <queue>
 
 using std::vector;
 using std::unique_ptr;
 using std::deque;
 
-extern vector<unique_ptr<KitchenObject>> objectsKitchen;
-extern deque<KitchenJob> jobQueueKitchen;
-extern deque<TransportJob> transportQueueKitchen;
-
 CookerObject::CookerObject(Vector2 initPos) : KitchenObject(initPos) {
     position = initPos;
-    progress = 100;
     cooked = 0;
     loaded = 0;
 }
@@ -34,41 +28,37 @@ void CookerObject::update() {
     if (loaded == 0 && cooked == 0) {
         // empty cooker, bring ingredients
         FridgeObject* closestFridge = nullptr;
+        float dist = __FLT_MAX__;
         for (auto& obj : objectsKitchen) {
             if (FridgeObject* frg = dynamic_cast<FridgeObject*>(obj.get())) {
-                closestFridge = frg;
-                break;
+                float frgDist = Vector2Distance(frg->position, position);
+                if (frgDist < dist) {
+                    closestFridge = frg;
+                    dist = frgDist;
+                }
             }
         }
         if (closestFridge) {
-            transportQueueKitchen.push_back(TransportJob(
-                closestFridge->position, closestFridge,
-                position, this
-            ));
+            transportQueueKitchen.push_back(TransportJob(closestFridge, this));
             inQueue = true;
         }
-    }
-
-    if (loaded > 0 && cooked == 0 && progress <= 0) {
-        // progress complete
-        cooked++;
-        loaded = 0;
     }
 
     if (cooked > 0) {
         // output ready, move out
         CounterObject* closestCounter = nullptr;
+        float dist = __FLT_MAX__;
         for (auto& obj : objectsKitchen) {
             if (CounterObject* cnt = dynamic_cast<CounterObject*>(obj.get())) {
-                closestCounter = cnt;
-                break;
+                float cntDist = Vector2Distance(cnt->position, position);
+                if (cntDist < dist) {
+                    closestCounter = cnt;
+                    dist = cntDist;
+                }
             }
         }
         if (closestCounter) {
-            transportQueueKitchen.push_back(TransportJob(
-                position, this,
-                closestCounter->position, closestCounter
-            ));
+            transportQueueKitchen.push_back(TransportJob(this, closestCounter));
             inQueue = true;
         }
     }
@@ -77,12 +67,19 @@ void CookerObject::update() {
 void CookerObject::tsptJobBegin() {
     std::cout << "COOKER: tsptJobBegin\n";
     cooked = 0;
+    inQueue = false;
 }
 
 void CookerObject::tsptJobEnd() {
     std::cout << "COOKER: tsptJobEnd\n";
     loaded++;
-    jobQueueKitchen.push_back(KitchenJob(position, this));
-    progress = 100;
+    jobQueueKitchen.push_back(BasicJob(this));
+    inQueue = false;
+}
+
+void CookerObject::basicJobEnd() {
+    std::cout << "COOKER: basicJobEnd\n";
+    cooked++;
+    loaded = 0;
     inQueue = false;
 }

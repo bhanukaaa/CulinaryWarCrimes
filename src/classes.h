@@ -14,14 +14,14 @@ class KitchenObject {
     public:
         Vector2 position;
         bool occupied;
-        bool inQueue;
-        float progress;
+        bool inQueue; // temp
 
         KitchenObject(Vector2);
         virtual void tsptJobBegin() {};
         virtual void tsptJobEnd() {};
-        virtual void render();
-        virtual void update();
+        virtual void basicJobEnd() {};
+        virtual void render() {};
+        virtual void update() {};
 };
 
 class CookerObject : public KitchenObject {
@@ -32,6 +32,7 @@ class CookerObject : public KitchenObject {
         CookerObject(Vector2);
         void tsptJobBegin() override;
         void tsptJobEnd() override;
+        void basicJobEnd() override;
         void render() override;
         void update() override;
 };
@@ -60,29 +61,51 @@ class CounterObject : public KitchenObject {
 // ------------------------------------------------------------------
 
 
-class Job {
+class DiningObject {
     public:
-        Vector2 dest;
-        bool active = true;
+        Vector2 position;
 
-        virtual void deactivate() { active = false; };
+        DiningObject(Vector2);
+        virtual void update() {};
+        virtual void render() {};
+};
+
+class TableObject : public DiningObject {
+    public:
+        short seats;
+        short occupied;
+
+        TableObject(Vector2);
+        void update() override;
+        void render() override;
 };
 
 
-class KitchenJob : public Job {
+// ------------------------------------------------------------------
+
+
+class Job {
     public:
-        KitchenObject* destObject;
-        KitchenJob(const Vector2&, KitchenObject*);
+        Vector2 targetPos;
+        KitchenObject* targetObject;
+        bool active = true;
+        bool inProgress = false;
+
+        virtual void deactivate() { active = false; }; // temp, for polymorph
+};
+
+
+class BasicJob : public Job {
+    public:
+        float progress = 100;
+        BasicJob(KitchenObject*);
 };
 
 class TransportJob : public Job {
     public:
-        bool inProgress = false;
-        bool srcReached = false;
-        KitchenObject* destObject;
-        KitchenObject* srcObject;
-        Vector2 src;
-        TransportJob(const Vector2&, KitchenObject*, const Vector2&, KitchenObject*);
+        bool delivered = false;
+        KitchenObject* deliveryObject;
+        TransportJob(KitchenObject*, KitchenObject*);
 };
 
 
@@ -104,6 +127,10 @@ class BaseNPC {
         float heuristic(Vector2&, Vector2&);
 };
 
+
+// ---------------------------------------------------------
+
+
 class KitchenNPC : public BaseNPC {
     public:
         KitchenObject* currObject;
@@ -119,5 +146,16 @@ class ChefNPC : public KitchenNPC {
         void renderNPC() override;
         void jobUpdate();
 };
+
+
+// ---------------------------------------------------------
+
+
+// class CustomerNPC : public BaseNPC {
+//     public:
+//         CustomerNPC(Vector2);
+//         virtual void render();
+// };
+
 
 #endif

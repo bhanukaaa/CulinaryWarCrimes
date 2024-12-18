@@ -1,18 +1,17 @@
 #include "constants.h"
 #include "classes.h"
+#include "globals.h"
 
 #include <raymath.h>
 #include <algorithm>
-#include <queue>
+#include <iostream>
 
 using std::vector;
 using std::priority_queue;
 
-extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
-
 BaseNPC::BaseNPC(Vector2& initPos) {
     position = initPos;
-    velocity = {(float) GetRandomValue(-1, 1), -10};
+    velocity = {0, 0};
     currTarget = {-1, -1};
 }
 
@@ -21,8 +20,7 @@ void BaseNPC::renderNPC() {
 }
 
 void BaseNPC::updateNPC() {
-    if (!currentPath.empty()) {
-        // following path
+    if (!currentPath.empty()) { // following path
         Vector2 targetPosition = currentPath.front();
         targetPosition.x *= TILE_SIZE;
         targetPosition.y *= TILE_SIZE;
@@ -34,8 +32,8 @@ void BaseNPC::updateNPC() {
         if (Vector2Distance(position, targetPosition) < 5.0f)
             currentPath.erase(currentPath.begin());
         if (currentPath.empty()) velocity = Vector2Scale(velocity, 0.1);
-    } // target set, no path
-    else if (currTarget.x != -1) {
+    }
+    else if (currTarget.x != -1) { // target set, no path
         Vector2 targetPos = {currTarget.x + HALF_TILE_SIZE, currTarget.y + HALF_TILE_SIZE}; 
         if (Vector2Distance(targetPos, position) > 10) {
             Vector2 direction = Vector2Normalize(Vector2Subtract(targetPos, position));
@@ -46,8 +44,8 @@ void BaseNPC::updateNPC() {
         }
         velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
         velocity = Vector2Scale(velocity, 0.99);
-    } // free will
-    else {
+    }
+    else { // free will
         velocity = Vector2Add(velocity, Vector2Scale(acceleration, GetFrameTime()));
         acceleration.x = GetRandomValue(-100, 100);
         acceleration.y = GetRandomValue(-100, 100);
@@ -77,6 +75,7 @@ void BaseNPC::updateNPC() {
     }
 
     if (!colliding) position = newPos;
+    else if (!currentPath.empty()) pathFind(currTarget);
 }
 
 struct Node {
@@ -123,6 +122,7 @@ void BaseNPC::pathFind(Vector2& target) {
             }
             std::reverse(path.begin(), path.end());
             currentPath = path;
+            currTarget = target;
             return;
         }
 
@@ -131,7 +131,6 @@ void BaseNPC::pathFind(Vector2& target) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx == 0 && dy == 0) continue;
-
                 Vector2 neighbor = {current->position.x + dx, current->position.y + dy};
 
                 if (neighbor.x < 0 || neighbor.x >= MAP_WIDTH_TILE || neighbor.y < 0 || neighbor.y >= MAP_HEIGHT_TILE) continue;
@@ -174,5 +173,6 @@ void BaseNPC::pathFind(Vector2& target) {
             }
         }
     }
+    currTarget = {-1, -1};
     currentPath.clear();
 }

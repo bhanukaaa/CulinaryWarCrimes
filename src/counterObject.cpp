@@ -1,17 +1,10 @@
 #include "classes.h"
 #include "constants.h"
+#include "globals.h"
 
 #include <iostream>
-#include <vector>
-#include <thread>
-#include <queue>
-
-extern std::deque<KitchenJob> jobQueueKitchen;
-extern std::vector<std::unique_ptr<KitchenObject>> objectsKitchen;
 
 CounterObject::CounterObject(Vector2 initPos) : KitchenObject(initPos) {
-    position = initPos;
-    progress = 100;
     holding = 0;
 }
 
