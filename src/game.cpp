@@ -10,8 +10,8 @@ using std::cout;
 
 // TODO: -----------------------------------------------------
 
-// move job assignment and handling to kitchenNPC class
 // fix seg fault when deleting object in job queue
+// move job assignment and handling to kitchenNPC class
 // change tile array rep of walls
 // waiter, customer and workflows
 // unset job if path finding fails

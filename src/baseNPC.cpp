@@ -59,7 +59,7 @@ void BaseNPC::updateNPC() {
     for (int xOff = -1; xOff < 2; xOff++) {
         for (int yOff = -1; yOff < 2; yOff++) {
             if (xOff == 0 && yOff == 0) continue;
-            if (tileArray[tileCoordsX + xOff][tileCoordsY + yOff] == 0) continue;
+            if (tileArray[tileCoordsX + xOff][tileCoordsY + yOff] >= 0) continue;
             Rectangle tile = {(float) (tileCoordsX + xOff) * TILE_SIZE, (float) (tileCoordsY + yOff) * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             if (CheckCollisionCircleRec(newPos, NPC_RADIUS, tile)) {
                 colliding = true;
@@ -104,7 +104,7 @@ void BaseNPC::pathFind(Vector2& target) {
     Vector2 startTile = {floor(position.x / TILE_SIZE), floor(position.y / TILE_SIZE)};
     Vector2 targetTile = {floor(target.x / TILE_SIZE), floor(target.y / TILE_SIZE)};
 
-    if (tileArray[(int) targetTile.x][(int) targetTile.y] !=  0) return;
+    if (tileArray[(int) targetTile.x][(int) targetTile.y] < 0) return;
 
     Node* startNode = new Node(startTile);
     Node* targetNode = new Node(targetTile);
@@ -134,10 +134,10 @@ void BaseNPC::pathFind(Vector2& target) {
                 Vector2 neighbor = {current->position.x + dx, current->position.y + dy};
 
                 if (neighbor.x < 0 || neighbor.x >= MAP_WIDTH_TILE || neighbor.y < 0 || neighbor.y >= MAP_HEIGHT_TILE) continue;
-                if (tileArray[(int) neighbor.x][(int) neighbor.y] != 0) continue;
+                if (tileArray[(int) neighbor.x][(int) neighbor.y] < 0) continue;
                 if (dx + dy != 1 && dx + dy != -1) { // diagonal cell
-                    if (tileArray[(int) neighbor.x][(int) current->position.y] != 0) continue;
-                    if (tileArray[(int) current->position.x][(int) neighbor.y] != 0) continue;
+                    if (tileArray[(int) neighbor.x][(int) current->position.y] < 0) continue;
+                    if (tileArray[(int) current->position.x][(int) neighbor.y] < 0) continue;
                 }
 
                 bool inClosed = false;

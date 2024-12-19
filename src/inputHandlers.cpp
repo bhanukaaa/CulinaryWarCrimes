@@ -19,7 +19,7 @@ void cameraMovement(short camMovX, short camMovY) {
 void place(short x, short y) {
     if (tileArray[x][y] == 0) {
         blocks.push_back((Vector2) {(float) x, (float) y});
-        tileArray[x][y] = 1;
+        tileArray[x][y] = -1;
     }
 }
 
@@ -59,7 +59,7 @@ void blockDeletion() {
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
 
-    if (tileArray[tileCoordsX][tileCoordsY] == 1) {
+    if (tileArray[tileCoordsX][tileCoordsY] < 0) {
         tileArray[tileCoordsX][tileCoordsY] = 0;
         short eraseIndex = -1;
         for (size_t b = 0; b < blocks.size(); b++) {
@@ -116,10 +116,14 @@ void objectPlacement(int& balance, int& selectedID) {
             break;
     }
     // add smth to tile array
+    tileArray[tileCoordsX][tileCoordsY] = 1;
 }
 
 void objectDeletion(int& balance) {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
+    int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
+    int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
+    if (tileArray[tileCoordsX][tileCoordsY] <= 0) return;
     worldMousePosition.x -= HALF_TILE_SIZE;
     worldMousePosition.y -= HALF_TILE_SIZE;
     for (auto o = objectsKitchen.begin(); o != objectsKitchen.end();) {
