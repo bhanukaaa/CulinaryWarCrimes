@@ -10,72 +10,83 @@
 // --------------------------------------------------------------
 
 
-class KitchenObject {
+class KitchenObj {
     public:
         Vector2 position;
         bool occupied;
         bool inQueue; // temp
 
-        KitchenObject(Vector2);
+        KitchenObj(Vector2);
+
+        virtual void render() {};
+        virtual void update() {};
+        static void renderPreview() {};
+
         virtual void tsptJobBegin() {};
         virtual void tsptJobEnd() {};
         virtual void basicJobEnd() {};
-        virtual void render() {};
-        virtual void update() {};
 };
 
-class CookerObject : public KitchenObject {
+class CookerObj : public KitchenObj {
     public:
         int loaded;
         int cooked;
 
-        CookerObject(Vector2);
+        CookerObj(Vector2);
+
+        void render() override;
+        void update() override;
+
         void tsptJobBegin() override;
         void tsptJobEnd() override;
         void basicJobEnd() override;
-        void render() override;
-        void update() override;
 };
 
-class FridgeObject : public KitchenObject {
+class FridgeObj : public KitchenObj {
     public:
-        FridgeObject(Vector2);
+        FridgeObj(Vector2);
+
+        void render() override;
+        void update() override;
+
         void tsptJobBegin() override;
         void tsptJobEnd() override;
-        void render() override;
-        void update() override;
 };
 
-class CounterObject : public KitchenObject {
+class CounterObj : public KitchenObj {
     public:
         int holding; // temp
 
-        CounterObject(Vector2);
-        void tsptJobBegin() override;
-        void tsptJobEnd() override;
+        CounterObj(Vector2);
+
         void render() override;
         void update() override;
+
+        void tsptJobBegin() override;
+        void tsptJobEnd() override;
 };
 
 
 // ------------------------------------------------------------------
 
 
-class DiningObject {
+class DiningObj {
     public:
         Vector2 position;
 
-        DiningObject(Vector2);
+        DiningObj(Vector2);
+
         virtual void update() {};
         virtual void render() {};
 };
 
-class TableObject : public DiningObject {
+class TableObj : public DiningObj {
     public:
         short seats;
         short occupied;
 
-        TableObject(Vector2);
+        TableObj(Vector2);
+
         void update() override;
         void render() override;
 };
@@ -87,7 +98,7 @@ class TableObject : public DiningObject {
 class Job {
     public:
         Vector2 targetPos;
-        KitchenObject* targetObject;
+        KitchenObj* targetObj;
         bool active = true;
         bool inProgress = false;
 
@@ -98,14 +109,16 @@ class Job {
 class BasicJob : public Job {
     public:
         float progress = 100;
-        BasicJob(KitchenObject*);
+
+        BasicJob(KitchenObj*);
 };
 
 class TransportJob : public Job {
     public:
         bool delivered = false;
-        KitchenObject* deliveryObject;
-        TransportJob(KitchenObject*, KitchenObject*);
+        KitchenObj* deliveryObj;
+
+        TransportJob(KitchenObj*, KitchenObj*);
 };
 
 
@@ -117,12 +130,14 @@ class BaseNPC {
         Vector2 position;
         Vector2 velocity;
         Vector2 acceleration;
-        std::vector<Vector2> currentPath;
         Vector2 currTarget;
+        std::vector<Vector2> currPath;
 
         BaseNPC(Vector2&);
+
         virtual void renderNPC();
         void updateNPC();
+
         void pathFind(Vector2& target);
         float heuristic(Vector2&, Vector2&);
 };
@@ -133,16 +148,17 @@ class BaseNPC {
 
 class KitchenNPC : public BaseNPC {
     public:
-        KitchenObject* currObject;
-        Job* currentJob;
+        Job* currJob;
 
         KitchenNPC(Vector2&);
+
         void resetJob();
 };
 
 class ChefNPC : public KitchenNPC {
     public:
         ChefNPC(Vector2&);
+
         void renderNPC() override;
         void jobUpdate();
 };
@@ -154,6 +170,7 @@ class ChefNPC : public KitchenNPC {
 // class CustomerNPC : public BaseNPC {
 //     public:
 //         CustomerNPC(Vector2);
+
 //         virtual void render();
 // };
 

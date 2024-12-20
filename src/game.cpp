@@ -12,7 +12,7 @@ using std::cout;
 
 // fix seg fault when deleting object in job queue
 // move job assignment and handling to kitchenNPC class
-// change tile array rep of walls
+// add static member functions to render previews
 // waiter, customer and workflows
 // unset job if path finding fails
 
@@ -26,8 +26,8 @@ vector<Vector2> blocks;
 short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 
 vector<unique_ptr<KitchenNPC>> staffKitchen;
-vector<unique_ptr<KitchenObject>> objectsKitchen;
-vector<unique_ptr<DiningObject>> objectsDining;
+vector<unique_ptr<KitchenObj>> objectsKitchen;
+vector<unique_ptr<DiningObj>> objectsDining;
 
 deque<BasicJob> jobQueueKitchen;
 deque<TransportJob> transportQueueKitchen;

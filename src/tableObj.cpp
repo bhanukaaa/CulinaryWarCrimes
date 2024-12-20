@@ -2,14 +2,14 @@
 #include "classes.h"
 #include "globals.h"
 
-TableObject::TableObject(Vector2 initPos) : DiningObject(initPos) {
+TableObj::TableObj(Vector2 initPos) : DiningObj(initPos) {
     seats = 4;
     occupied = 0;
 }
 
-void TableObject::render() {
+void TableObj::render() {
     DrawCircle(position.x + HALF_TILE_SIZE, position.y + HALF_TILE_SIZE, HALF_TILE_SIZE, BLACK);
     DrawCircle(position.x + HALF_TILE_SIZE, position.y + HALF_TILE_SIZE, HALF_TILE_SIZE - 2, BROWN);
 }
 
-void TableObject::update() {}
+void TableObj::update() {}

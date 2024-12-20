@@ -2,11 +2,10 @@
 #include "classes.h"
 
 KitchenNPC::KitchenNPC(Vector2& initPos) : BaseNPC(initPos) {
-    currentJob = nullptr;
+    currJob = nullptr;
 }
 
 void KitchenNPC::resetJob() {
-    currObject = nullptr;
-    currentJob = nullptr;
+    currJob = nullptr;
     currTarget = {-1, -1};
 }

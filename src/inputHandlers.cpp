@@ -99,19 +99,19 @@ void objectPlacement(int& balance, int& selectedID) {
 
     switch (selectedID) {
         case 0:
-            objectsKitchen.push_back(std::make_unique<CookerObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
+            objectsKitchen.push_back(std::make_unique<CookerObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
             balance -= 750;
             break;
         case 1:
-            objectsKitchen.push_back(std::make_unique<FridgeObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
+            objectsKitchen.push_back(std::make_unique<FridgeObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
             balance -= 1200;
             break;
         case 2:
-            objectsKitchen.push_back(std::make_unique<CounterObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
+            objectsKitchen.push_back(std::make_unique<CounterObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
             balance -= 600;
             break;
         case 3:
-            objectsDining.push_back(std::make_unique<TableObject>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
+            objectsDining.push_back(std::make_unique<TableObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
             balance -= 600;
             break;
     }

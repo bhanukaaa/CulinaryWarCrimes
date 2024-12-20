@@ -20,8 +20,8 @@ void BaseNPC::renderNPC() {
 }
 
 void BaseNPC::updateNPC() {
-    if (!currentPath.empty()) { // following path
-        Vector2 targetPosition = currentPath.front();
+    if (!currPath.empty()) { // following path
+        Vector2 targetPosition = currPath.front();
         targetPosition.x *= TILE_SIZE;
         targetPosition.y *= TILE_SIZE;
         targetPosition.x += HALF_TILE_SIZE;
@@ -30,8 +30,8 @@ void BaseNPC::updateNPC() {
 
         velocity = Vector2Scale(direction, 100.0f);
         if (Vector2Distance(position, targetPosition) < 5.0f)
-            currentPath.erase(currentPath.begin());
-        if (currentPath.empty()) velocity = Vector2Scale(velocity, 0.1);
+            currPath.erase(currPath.begin());
+        if (currPath.empty()) velocity = Vector2Scale(velocity, 0.1);
     }
     else if (currTarget.x != -1) { // target set, no path
         Vector2 targetPos = {currTarget.x + HALF_TILE_SIZE, currTarget.y + HALF_TILE_SIZE}; 
@@ -75,7 +75,7 @@ void BaseNPC::updateNPC() {
     }
 
     if (!colliding) position = newPos;
-    else if (!currentPath.empty()) pathFind(currTarget);
+    else if (!currPath.empty()) pathFind(currTarget);
 }
 
 struct Node {
@@ -112,32 +112,32 @@ void BaseNPC::pathFind(Vector2& target) {
     openList.push(startNode);
 
     while (!openList.empty()) {
-        Node* current = openList.top();
+        Node* curr = openList.top();
         openList.pop();
 
-        if (current->position.x == targetNode->position.x && current->position.y == targetNode->position.y) {
-            while (current != nullptr) {
-                path.push_back(current->position);
-                current = current->parent;
+        if (curr->position.x == targetNode->position.x && curr->position.y == targetNode->position.y) {
+            while (curr != nullptr) {
+                path.push_back(curr->position);
+                curr = curr->parent;
             }
             std::reverse(path.begin(), path.end());
-            currentPath = path;
+            currPath = path;
             currTarget = target;
             return;
         }
 
-        closedList.push_back(current);
+        closedList.push_back(curr);
 
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 if (dx == 0 && dy == 0) continue;
-                Vector2 neighbor = {current->position.x + dx, current->position.y + dy};
+                Vector2 neighbor = {curr->position.x + dx, curr->position.y + dy};
 
                 if (neighbor.x < 0 || neighbor.x >= MAP_WIDTH_TILE || neighbor.y < 0 || neighbor.y >= MAP_HEIGHT_TILE) continue;
                 if (tileArray[(int) neighbor.x][(int) neighbor.y] < 0) continue;
                 if (dx + dy != 1 && dx + dy != -1) { // diagonal cell
-                    if (tileArray[(int) neighbor.x][(int) current->position.y] < 0) continue;
-                    if (tileArray[(int) current->position.x][(int) neighbor.y] < 0) continue;
+                    if (tileArray[(int) neighbor.x][(int) curr->position.y] < 0) continue;
+                    if (tileArray[(int) curr->position.x][(int) neighbor.y] < 0) continue;
                 }
 
                 bool inClosed = false;
@@ -151,9 +151,9 @@ void BaseNPC::pathFind(Vector2& target) {
                 if (inClosed) continue;
 
                 Node* neighborNode = new Node(neighbor);
-                neighborNode->gCost = current->gCost + 1;
+                neighborNode->gCost = curr->gCost + 1;
                 neighborNode->hCost = heuristic(neighbor, targetTile);
-                neighborNode->parent = current;
+                neighborNode->parent = curr;
 
                 bool inOpen = false;
                 vector<Node*> tempNodes;
@@ -174,5 +174,5 @@ void BaseNPC::pathFind(Vector2& target) {
         }
     }
     currTarget = {-1, -1};
-    currentPath.clear();
+    currPath.clear();
 }

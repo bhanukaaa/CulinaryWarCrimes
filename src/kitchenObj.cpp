@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-KitchenObject::KitchenObject(Vector2 initPos) {
+KitchenObj::KitchenObj(Vector2 initPos) {
     position = initPos;
     inQueue = false;
     occupied = false;

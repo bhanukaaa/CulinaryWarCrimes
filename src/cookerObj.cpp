@@ -9,28 +9,28 @@ using std::vector;
 using std::unique_ptr;
 using std::deque;
 
-CookerObject::CookerObject(Vector2 initPos) : KitchenObject(initPos) {
+CookerObj::CookerObj(Vector2 initPos) : KitchenObj(initPos) {
     position = initPos;
     cooked = 0;
     loaded = 0;
 }
 
-void CookerObject::render() {
+void CookerObj::render() {
     DrawRectangle(position.x + 2, position.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, WHITE);
     DrawRectangle(position.x + 5, position.y + 12, TILE_SIZE - 10, TILE_SIZE - 17, GRAY);
     if (cooked) DrawRectangle(position.x + 5, position.y + 6, TILE_SIZE - 10, 6, BROWN);
     if (loaded) DrawRectangle(position.x + 5, position.y + 9, TILE_SIZE - 10, 3, PINK);
 }
 
-void CookerObject::update() {
+void CookerObj::update() {
     if (inQueue) return;
 
     if (loaded == 0 && cooked == 0) {
         // empty cooker, bring ingredients
-        FridgeObject* closestFridge = nullptr;
+        FridgeObj* closestFridge = nullptr;
         float dist = __FLT_MAX__;
         for (auto& obj : objectsKitchen) {
-            if (FridgeObject* frg = dynamic_cast<FridgeObject*>(obj.get())) {
+            if (FridgeObj* frg = dynamic_cast<FridgeObj*>(obj.get())) {
                 float frgDist = Vector2Distance(frg->position, position);
                 if (frgDist < dist) {
                     closestFridge = frg;
@@ -46,10 +46,10 @@ void CookerObject::update() {
 
     if (cooked > 0) {
         // output ready, move out
-        CounterObject* closestCounter = nullptr;
+        CounterObj* closestCounter = nullptr;
         float dist = __FLT_MAX__;
         for (auto& obj : objectsKitchen) {
-            if (CounterObject* cnt = dynamic_cast<CounterObject*>(obj.get())) {
+            if (CounterObj* cnt = dynamic_cast<CounterObj*>(obj.get())) {
                 float cntDist = Vector2Distance(cnt->position, position);
                 if (cntDist < dist) {
                     closestCounter = cnt;
@@ -64,20 +64,20 @@ void CookerObject::update() {
     }
 }
 
-void CookerObject::tsptJobBegin() {
+void CookerObj::tsptJobBegin() {
     std::cout << "COOKER: tsptJobBegin\n";
     cooked = 0;
     inQueue = false;
 }
 
-void CookerObject::tsptJobEnd() {
+void CookerObj::tsptJobEnd() {
     std::cout << "COOKER: tsptJobEnd\n";
     loaded++;
     jobQueueKitchen.push_back(BasicJob(this));
     inQueue = false;
 }
 
-void CookerObject::basicJobEnd() {
+void CookerObj::basicJobEnd() {
     std::cout << "COOKER: basicJobEnd\n";
     cooked++;
     loaded = 0;

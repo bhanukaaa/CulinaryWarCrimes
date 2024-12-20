@@ -17,11 +17,11 @@ void ChefNPC::renderNPC() {
 }
 
 void ChefNPC::jobUpdate() {
-    if (!currentJob) {
+    if (!currJob) {
         bool tspJobSet = false;
         for (auto& tsp : transportQueueKitchen) {
             if (tsp.inProgress) continue;
-            currentJob = &tsp;
+            currJob = &tsp;
             tspJobSet = true;
             tsp.inProgress = true;
             break;
@@ -30,34 +30,34 @@ void ChefNPC::jobUpdate() {
         if (!tspJobSet) {
             for (auto& job : jobQueueKitchen) {
                 if (job.inProgress) continue;
-                currentJob = &job;
+                currJob = &job;
                 job.inProgress = true;
                 break;
             }
         }
 
-        if (!currentJob) return;
-        pathFind(currentJob->targetObject->position);
+        if (!currJob) return;
+        pathFind(currJob->targetObj->position);
     }
 
-    if (currentPath.empty() && CheckCollisionPointRec(position, (Rectangle) {currTarget.x, currTarget.y, TILE_SIZE, TILE_SIZE})) {
-        // path finding complete and currently on target
-        if (TransportJob* job = dynamic_cast<TransportJob*>(currentJob)) {
+    if (currPath.empty() && CheckCollisionPointRec(position, (Rectangle) {currTarget.x, currTarget.y, TILE_SIZE, TILE_SIZE})) {
+        // path finding complete and currly on target
+        if (TransportJob* job = dynamic_cast<TransportJob*>(currJob)) {
             if (!job->delivered) { // reached source object
-                job->targetObject->tsptJobBegin();
+                job->targetObj->tsptJobBegin();
                 job->delivered = true;
-                pathFind(job->deliveryObject->position);
+                pathFind(job->deliveryObj->position);
             }
             else { // reached destination object
-                job->deliveryObject->tsptJobEnd();
+                job->deliveryObj->tsptJobEnd();
                 job->active = false;
                 resetJob();
             }
         }
-        else if (BasicJob* job = dynamic_cast<BasicJob*>(currentJob)) {
+        else if (BasicJob* job = dynamic_cast<BasicJob*>(currJob)) {
             if (job->progress > 0) job->progress -= 0.5f;
             else {
-                job->targetObject->basicJobEnd();
+                job->targetObj->basicJobEnd();
                 job->active = false;
                 resetJob();
             }
