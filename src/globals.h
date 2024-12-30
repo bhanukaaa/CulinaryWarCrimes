@@ -17,8 +17,11 @@ extern short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 extern std::vector<std::unique_ptr<KitchenNPC>> staffKitchen;
 extern std::vector<std::unique_ptr<KitchenObj>> objectsKitchen;
 extern std::vector<std::unique_ptr<DiningObj>> objectsDining;
+extern std::vector<std::unique_ptr<CustomerNPC>> customers;
 
 extern std::deque<BasicJob> jobQueueKitchen;
 extern std::deque<TransportJob> transportQueueKitchen;
+
+extern int balance;
 
 #endif

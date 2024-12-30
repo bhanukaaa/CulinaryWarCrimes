@@ -6,6 +6,7 @@
 
 CounterObj::CounterObj(Vector2 initPos) : KitchenObj(initPos) {
     holding = 0;
+    balance -= 500;
 }
 
 void CounterObj::render() {

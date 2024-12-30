@@ -15,7 +15,7 @@ BaseNPC::BaseNPC(Vector2& initPos) {
     currTarget = {-1, -1};
 }
 
-void BaseNPC::renderNPC() {
+void BaseNPC::render() {
     DrawPoly(position, 8, NPC_RADIUS, 0, DARKBLUE);
 }
 
@@ -37,7 +37,7 @@ void BaseNPC::updateNPC() {
         Vector2 targetPos = {currTarget.x + HALF_TILE_SIZE, currTarget.y + HALF_TILE_SIZE}; 
         if (Vector2Distance(targetPos, position) > 10) {
             Vector2 direction = Vector2Normalize(Vector2Subtract(targetPos, position));
-            acceleration = Vector2Scale(direction, GetRandomValue(10, 30));
+            acceleration = Vector2Scale(direction, 50);
         } else {
             acceleration.x = GetRandomValue(-10, 10);
             acceleration.y = GetRandomValue(-10, 10);

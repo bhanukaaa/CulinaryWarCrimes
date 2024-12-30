@@ -20,7 +20,6 @@ class KitchenObj {
 
         virtual void render() {};
         virtual void update() {};
-        static void renderPreview() {};
 
         virtual void tsptJobBegin() {};
         virtual void tsptJobEnd() {};
@@ -80,14 +79,26 @@ class DiningObj {
         virtual void render() {};
 };
 
+class ChairObj;
 class TableObj : public DiningObj {
     public:
-        short seats;
-        short occupied;
+        std::vector<ChairObj*> chairs;
 
         TableObj(Vector2);
 
-        void update() override;
+        // void update() override;
+        void render() override;
+        void addChair(ChairObj*);
+};
+
+class ChairObj : public DiningObj {
+    public:
+        TableObj* linkedTable = nullptr;
+        bool occupied = false;
+
+        ChairObj(Vector2, TableObj*);
+
+        // void update() override;
         void render() override;
 };
 
@@ -133,12 +144,13 @@ class BaseNPC {
         Vector2 currTarget;
         std::vector<Vector2> currPath;
 
+        BaseNPC() {};
         BaseNPC(Vector2&);
 
-        virtual void renderNPC();
+        virtual void render();
         void updateNPC();
 
-        void pathFind(Vector2& target);
+        void pathFind(Vector2&);
         float heuristic(Vector2&, Vector2&);
 };
 
@@ -159,7 +171,7 @@ class ChefNPC : public KitchenNPC {
     public:
         ChefNPC(Vector2&);
 
-        void renderNPC() override;
+        void render() override;
         void jobUpdate();
 };
 
@@ -167,12 +179,15 @@ class ChefNPC : public KitchenNPC {
 // ---------------------------------------------------------
 
 
-// class CustomerNPC : public BaseNPC {
-//     public:
-//         CustomerNPC(Vector2);
+class CustomerNPC : public BaseNPC {
+    public:
+        bool kill = false;
 
-//         virtual void render();
-// };
+        CustomerNPC();
+
+        virtual void update();
+        virtual void render();
+};
 
 
 #endif

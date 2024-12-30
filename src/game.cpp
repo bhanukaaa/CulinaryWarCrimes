@@ -15,6 +15,8 @@ using std::cout;
 // add static member functions to render previews
 // waiter, customer and workflows
 // unset job if path finding fails
+// split src into subfolders
+// move balance updaters upon place/delete in constructor/destructor
 
 // globals ----------------------------------------------------
 
@@ -28,9 +30,12 @@ short tileArray[MAP_WIDTH_TILE][MAP_HEIGHT_TILE];
 vector<unique_ptr<KitchenNPC>> staffKitchen;
 vector<unique_ptr<KitchenObj>> objectsKitchen;
 vector<unique_ptr<DiningObj>> objectsDining;
+vector<unique_ptr<CustomerNPC>> customers;
 
 deque<BasicJob> jobQueueKitchen;
 deque<TransportJob> transportQueueKitchen;
+
+int balance;
 
 // rendering --------------------------------------------------
 
@@ -46,15 +51,16 @@ void drawWorld() {
     for (int y = TILE_SIZE; y < MAP_HEIGHT; y += TILE_SIZE)
         DrawLine(0, y, MAP_WIDTH, y, {0, 0, 0, 40});
 
-    for (size_t b = 0; b < blocks.size(); b++)
-        DrawRectangle(blocks[b].x * TILE_SIZE, blocks[b].y * TILE_SIZE, TILE_SIZE, TILE_SIZE, DARKBROWN);
+    for (auto& block : blocks)
+        DrawRectangle(block.x * TILE_SIZE, block.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, DARKBROWN);
 
     for (auto& object : objectsKitchen) object->render();
     for (auto& object : objectsDining) object->render();
-    for (auto& npc : staffKitchen) npc->renderNPC();
+    for (auto& npc : staffKitchen) npc->render();
+    for (auto& cust : customers) cust->render();
 }
 
-void drawMainUI(short& uiMode, int& balance, int& selectedID) {
+void drawMainUI(short& uiMode, int& selectedID) {
     switch (uiMode) {
         case UI_MODE_NORMAL:
             DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BLUE);
@@ -87,7 +93,7 @@ void drawMainUI(short& uiMode, int& balance, int& selectedID) {
 
     DrawFPS(10, 80);
     DrawText(TextFormat("$%d", balance), 22, screenHeight - 48, 40, BLACK);
-    DrawText(TextFormat("$%d", balance), 19, screenHeight - 51, 40, WHITE);
+    DrawText(TextFormat("$%d", balance), 19, screenHeight - 51, 40, (balance >= 0 ? WHITE : RED));
 }
 
 // logic ------------------------------------------------------
@@ -97,6 +103,21 @@ void updateLogic() {
         if (ChefNPC* chef = dynamic_cast<ChefNPC*>(npc.get()))
             chef->jobUpdate();
         npc->updateNPC();
+    }
+
+    if (customers.size() < MAX_CUSTOMERS) {
+        if (GetRandomValue(0, 500) == 7)
+            customers.push_back(std::make_unique<CustomerNPC>());
+    }
+
+    for (auto c = customers.begin(); c != customers.end();) {
+        if (c->get()->kill)
+            c = customers.erase(c);
+        else {
+            c->get()->update();
+            c->get()->updateNPC();
+            ++c;
+        }
     }
 
     for (auto& object : objectsKitchen) object->update();
@@ -128,7 +149,7 @@ int main(void) {
 
     short uiMode = 0;
     int selectedID = 0;
-    int balance = 10000;
+    balance = 10000;
 
     while (!WindowShouldClose()) {
         if (IsKeyReleased(KEY_ESCAPE)) uiMode = UI_MODE_NORMAL;
@@ -140,7 +161,7 @@ int main(void) {
         if (uiMode == UI_MODE_OBJECT || uiMode == UI_MODE_STAFF)
             selectionChange(uiMode, selectedID); 
 
-        if (IsKeyDown(KEY_BACKSLASH)) balance += 7193; // temp
+        if (IsKeyDown(KEY_BACKSLASH)) balance += 7193; // TEMP
 
         camera.zoom += ((float) GetMouseWheelMove() * 0.04f);
         if (camera.zoom > 3.0f) camera.zoom = 3.0f;
@@ -161,21 +182,17 @@ int main(void) {
         if (uiMode == 2 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
             blockDeletion();
 
-        if (uiMode == 3 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-            if (balance >= 1000) {
-                npcPlacement();
-                balance -= 1000;
-            }
-        }
+        if (uiMode == 3 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            npcPlacement();
 
         if (uiMode == 3 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
-            npcDeletion(balance);
+            npcDeletion();
 
         if (uiMode == 4 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            objectPlacement(balance, selectedID);
+            objectPlacement(selectedID);
 
         if (uiMode == 4 && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-            objectDeletion(balance);
+            objectDeletion();
 
         // temp
         if (uiMode == 0 && IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
@@ -199,7 +216,7 @@ int main(void) {
                 drawWorld();
             EndMode2D();
 
-            drawMainUI(uiMode, balance, selectedID);
+            drawMainUI(uiMode, selectedID);
         EndDrawing();
     }
 

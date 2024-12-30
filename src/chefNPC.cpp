@@ -9,9 +9,11 @@ using std::vector;
 using std::unique_ptr;
 using std::deque;
 
-ChefNPC::ChefNPC(Vector2& initPos) : KitchenNPC(initPos) {}
+ChefNPC::ChefNPC(Vector2& initPos) : KitchenNPC(initPos) {
+    balance -= 250;
+}
 
-void ChefNPC::renderNPC() {
+void ChefNPC::render() {
     DrawPoly(position, 8, NPC_RADIUS, 5, BLACK);
     DrawPoly(position, 8, NPC_RADIUS - 2, 5, RAYWHITE);
 }

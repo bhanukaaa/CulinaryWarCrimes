@@ -73,6 +73,7 @@ void blockDeletion() {
 }
 
 void npcPlacement() {
+    if (balance < 0) return;
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
@@ -80,7 +81,7 @@ void npcPlacement() {
     staffKitchen.push_back(std::make_unique<ChefNPC>(worldMousePosition));
 }
 
-void npcDeletion(int& balance) {
+void npcDeletion() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
 
     for (auto s = staffKitchen.begin(); s != staffKitchen.end();) {
@@ -91,7 +92,8 @@ void npcDeletion(int& balance) {
     }
 }
 
-void objectPlacement(int& balance, int& selectedID) {
+void objectPlacement(int& selectedID) {
+    if (balance < 0) return;
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
@@ -99,27 +101,59 @@ void objectPlacement(int& balance, int& selectedID) {
 
     switch (selectedID) {
         case 0:
-            objectsKitchen.push_back(std::make_unique<CookerObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
-            balance -= 750;
+            objectsKitchen.push_back(
+                std::make_unique<CookerObj>(
+                    (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}
+            ));
             break;
+
         case 1:
-            objectsKitchen.push_back(std::make_unique<FridgeObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
-            balance -= 1200;
+            objectsKitchen.push_back(
+                std::make_unique<FridgeObj>(
+                    (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}
+            ));
             break;
+
         case 2:
-            objectsKitchen.push_back(std::make_unique<CounterObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
-            balance -= 600;
+            objectsKitchen.push_back(
+                std::make_unique<CounterObj>(
+                    (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}
+            ));
             break;
+
         case 3:
-            objectsDining.push_back(std::make_unique<TableObj>((Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}));
-            balance -= 600;
+            objectsDining.push_back(
+                std::make_unique<TableObj>(
+                    (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}
+            ));
+            break;
+
+        case 4:
+            TableObj* linkTable = nullptr;
+            for (auto& o : objectsDining) {
+                if (TableObj* t = dynamic_cast<TableObj*>(o.get())) {
+                    if (t->chairs.size() >= 4) continue;
+                    if (Vector2Distance(t->position, (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}) <= TILE_SIZE + 1) {
+                        linkTable = t;
+                        break;
+                    }
+                }
+            }
+
+            if (linkTable != nullptr) {
+                objectsDining.push_back(
+                    std::make_unique<ChairObj>(
+                        (Vector2) {(float) TILE_SIZE * tileCoordsX, (float) TILE_SIZE * tileCoordsY}, linkTable
+                ));
+                linkTable->addChair(dynamic_cast<ChairObj*>(objectsDining.back().get()));
+            }
             break;
     }
     // add smth to tile array
     tileArray[tileCoordsX][tileCoordsY] = 1;
 }
 
-void objectDeletion(int& balance) {
+void objectDeletion() {
     Vector2 worldMousePosition = GetScreenToWorld2D(GetMousePosition(), camera);
     int tileCoordsX = floor(worldMousePosition.x / TILE_SIZE);
     int tileCoordsY = floor(worldMousePosition.y / TILE_SIZE);
@@ -132,6 +166,12 @@ void objectDeletion(int& balance) {
             o = objectsKitchen.erase(o);
         } else ++o;
     }
+    for (auto o = objectsDining.begin(); o != objectsDining.end();) {
+        if (CheckCollisionPointCircle(worldMousePosition, (*o)->position, HALF_TILE_SIZE)) {
+            balance += 100;
+            o = objectsDining.erase(o);
+        } else ++o;
+    }
 }
 
 void selectionChange(short& uiMode, int& selectedID) {
@@ -140,6 +180,6 @@ void selectionChange(short& uiMode, int& selectedID) {
     if (selectedID < 0) selectedID = 0;
 
     if (uiMode == UI_MODE_OBJECT) {
-        if (selectedID > 3) selectedID = 3;
+        if (selectedID > 4) selectedID = 4;
     }
 }

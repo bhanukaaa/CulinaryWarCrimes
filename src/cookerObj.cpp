@@ -13,6 +13,8 @@ CookerObj::CookerObj(Vector2 initPos) : KitchenObj(initPos) {
     position = initPos;
     cooked = 0;
     loaded = 0;
+
+    balance -= 1000;
 }
 
 void CookerObj::render() {

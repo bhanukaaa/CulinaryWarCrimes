@@ -4,7 +4,9 @@
 
 #include <iostream>
 
-FridgeObj::FridgeObj(Vector2 initPos) : KitchenObj(initPos) {}
+FridgeObj::FridgeObj(Vector2 initPos) : KitchenObj(initPos) {
+    balance -= 1200;
+}
 
 void FridgeObj::render() {
     DrawRectangle(position.x + 2, position.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, WHITE);
