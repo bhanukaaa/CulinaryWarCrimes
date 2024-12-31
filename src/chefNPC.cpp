@@ -43,7 +43,7 @@ void ChefNPC::jobUpdate() {
     }
 
     if (currPath.empty() && CheckCollisionPointRec(position, (Rectangle) {currTarget.x, currTarget.y, TILE_SIZE, TILE_SIZE})) {
-        // path finding complete and currly on target
+        // path finding complete and currently on target
         if (TransportJob* job = dynamic_cast<TransportJob*>(currJob)) {
             if (!job->delivered) { // reached source object
                 job->targetObj->tsptJobBegin();

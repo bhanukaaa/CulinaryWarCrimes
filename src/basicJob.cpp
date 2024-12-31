@@ -1,6 +1,6 @@
 #include "classes.h"
 
-BasicJob::BasicJob(KitchenObj* target) {
+BasicJob::BasicJob(BaseObj* target) {
     active = true;
     targetObj = target;
 }

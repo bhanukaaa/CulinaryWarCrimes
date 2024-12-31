@@ -1,7 +1,7 @@
 #include "classes.h"
 #include "constants.h"
 
-TransportJob::TransportJob(KitchenObj* srcPtr, KitchenObj* delivPtr) {
+TransportJob::TransportJob(BaseObj* srcPtr, BaseObj* delivPtr) {
     targetObj = srcPtr;
     deliveryObj = delivPtr;
     delivered = false;

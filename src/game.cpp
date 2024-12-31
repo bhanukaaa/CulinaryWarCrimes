@@ -35,6 +35,7 @@ vector<unique_ptr<CustomerNPC>> customers;
 deque<BasicJob> jobQueueKitchen;
 deque<TransportJob> transportQueueKitchen;
 
+
 int balance;
 
 // rendering --------------------------------------------------

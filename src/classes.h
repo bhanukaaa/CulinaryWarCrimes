@@ -7,12 +7,24 @@
 #include <vector>
 
 
+// -------------------------------------------------------------
+
+
+class BaseObj {
+    public:
+        Vector2 position;
+
+        virtual void tsptJobBegin() {};
+        virtual void tsptJobEnd() {};
+        virtual void basicJobEnd() {};
+};
+
+
 // --------------------------------------------------------------
 
 
-class KitchenObj {
+class KitchenObj : public BaseObj {
     public:
-        Vector2 position;
         bool occupied;
         bool inQueue; // temp
 
@@ -20,10 +32,6 @@ class KitchenObj {
 
         virtual void render() {};
         virtual void update() {};
-
-        virtual void tsptJobBegin() {};
-        virtual void tsptJobEnd() {};
-        virtual void basicJobEnd() {};
 };
 
 class CookerObj : public KitchenObj {
@@ -69,10 +77,8 @@ class CounterObj : public KitchenObj {
 // ------------------------------------------------------------------
 
 
-class DiningObj {
+class DiningObj : public BaseObj {
     public:
-        Vector2 position;
-
         DiningObj(Vector2);
 
         virtual void update() {};
@@ -83,10 +89,12 @@ class ChairObj;
 class TableObj : public DiningObj {
     public:
         std::vector<ChairObj*> chairs;
+        short state = 0;
+        short occupied = 0;
 
         TableObj(Vector2);
 
-        // void update() override;
+        void update() override;
         void render() override;
         void addChair(ChairObj*);
 };
@@ -98,7 +106,7 @@ class ChairObj : public DiningObj {
 
         ChairObj(Vector2, TableObj*);
 
-        // void update() override;
+        void update() override {};
         void render() override;
 };
 
@@ -109,7 +117,7 @@ class ChairObj : public DiningObj {
 class Job {
     public:
         Vector2 targetPos;
-        KitchenObj* targetObj;
+        BaseObj* targetObj;
         bool active = true;
         bool inProgress = false;
 
@@ -121,15 +129,15 @@ class BasicJob : public Job {
     public:
         float progress = 100;
 
-        BasicJob(KitchenObj*);
+        BasicJob(BaseObj*);
 };
 
 class TransportJob : public Job {
     public:
         bool delivered = false;
-        KitchenObj* deliveryObj;
+        BaseObj* deliveryObj;
 
-        TransportJob(KitchenObj*, KitchenObj*);
+        TransportJob(BaseObj*, BaseObj*);
 };
 
 
@@ -181,7 +189,10 @@ class ChefNPC : public KitchenNPC {
 
 class CustomerNPC : public BaseNPC {
     public:
+        DiningObj* currObj;
         bool kill = false;
+        short state = 0;
+        float timer = 0;
 
         CustomerNPC();
 
