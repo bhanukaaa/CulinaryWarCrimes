@@ -18,5 +18,6 @@ void npcDeletion();
 void objectPlacement(int&);
 void objectDeletion();
 void selectionChange(short&, int&);
+void drawMainUI(short&, int&);
 
 #endif

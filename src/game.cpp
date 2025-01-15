@@ -8,7 +8,7 @@ using std::deque;
 using std::thread;
 using std::cout;
 
-// TODO: -----------------------------------------------------
+// TODO: ------------------------------------------------------
 
 // fix seg fault when deleting object in job queue
 // move job assignment and handling to kitchenNPC class
@@ -20,8 +20,6 @@ using std::cout;
 
 // globals ----------------------------------------------------
 
-const int screenWidth = 1600;
-const int screenHeight = 900;
 Camera2D camera;
 
 vector<Vector2> blocks;
@@ -34,7 +32,6 @@ vector<unique_ptr<CustomerNPC>> customers;
 
 deque<BasicJob> jobQueueKitchen;
 deque<TransportJob> transportQueueKitchen;
-
 
 int balance;
 
@@ -61,42 +58,6 @@ void drawWorld() {
     for (auto& cust : customers) cust->render();
 }
 
-void drawMainUI(short& uiMode, int& selectedID) {
-    switch (uiMode) {
-        case UI_MODE_NORMAL:
-            DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BLUE);
-            DrawText("Normal", 7, 7, 30, BLACK);
-            DrawText("Normal", 5, 5, 30, WHITE);
-            break;
-        case UI_MODE_BUILD:
-            DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, YELLOW);
-            DrawText("Build", 7, 7, 30, BLACK);
-            DrawText("Build", 5, 5, 30, WHITE);
-            break;
-        case UI_MODE_DESTROY:
-            DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, RED);
-            DrawText("Destroy", 7, 7, 30, BLACK);
-            DrawText("Destroy", 5, 5, 30, WHITE);
-            break;
-        case UI_MODE_STAFF:
-            DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, BROWN);
-            DrawText("Staff", 7, 7, 30, BLACK);
-            DrawText("Staff", 5, 5, 30, WHITE);
-            break;
-        case UI_MODE_OBJECT:
-            DrawRectangleLinesEx((Rectangle) {0, 0, screenWidth, screenHeight}, 5, PURPLE);
-            DrawText("Object", 7, 7, 30, BLACK);
-            DrawText("Object", 5, 5, 30, WHITE);
-            DrawText(TextFormat("Selected ID: %d", selectedID), 9, 47, 30, BLACK);
-            DrawText(TextFormat("Selected ID: %d", selectedID), 7, 45, 30, WHITE);
-            break;
-    }
-
-    DrawFPS(10, 80);
-    DrawText(TextFormat("$%d", balance), 22, screenHeight - 48, 40, BLACK);
-    DrawText(TextFormat("$%d", balance), 19, screenHeight - 51, 40, (balance >= 0 ? WHITE : RED));
-}
-
 // logic ------------------------------------------------------
 
 void updateLogic() {
@@ -117,7 +78,7 @@ void updateLogic() {
         else {
             c->get()->update();
             c->get()->updateNPC();
-            ++c;
+            c++;
         }
     }
 
@@ -133,14 +94,14 @@ void updateLogic() {
 // ------------------------------------------------------------
 
 int main(void) {
-    InitWindow(screenWidth, screenHeight, "Culinary War Crimes");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Culinary War Crimes");
     SetExitKey(KEY_NULL);
     SetTargetFPS(60);
 
     short camMovX, camMovY;
     camera = {0};
     camera.target = (Vector2) {MAP_WIDTH / 2, MAP_HEIGHT - 450};
-    camera.offset = (Vector2) {screenWidth / 2.0f, screenHeight / 2.0f};
+    camera.offset = (Vector2) {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 

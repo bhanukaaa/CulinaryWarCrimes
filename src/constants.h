@@ -1,3 +1,5 @@
+#define SCREEN_WIDTH 1600
+#define SCREEN_HEIGHT 900
 #define MAP_WIDTH 3000
 #define MAP_HEIGHT 4000
 #define TILE_SIZE 50

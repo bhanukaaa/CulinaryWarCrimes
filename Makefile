@@ -130,6 +130,7 @@ endif
 # RAYLIB_RELEASE_PATH points to provided binaries or your freshly built version
 RAYLIB_RELEASE_PATH 	?= $(RAYLIB_PATH)/src
 
+
 # EXAMPLE_RUNTIME_PATH embeds a custom runtime location of libraylib.so or other desired libraries
 # into each example binary compiled with RAYLIB_LIBTYPE=SHARED. It defaults to RAYLIB_RELEASE_PATH
 # so that these examples link at runtime with your version of libraylib.so in ../release/libs/linux
